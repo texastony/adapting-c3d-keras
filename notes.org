@@ -1,0 +1,30 @@
+#+TODO: TODO IN-PROGRESS WAITING DONE
+#+STARTUP: showall
+Capstone -*- mode: org -*-
+
+* 31/08/2017, THURSDAY
+** DONE Create Summary of labels. 
+   1. Write Script locally and test. 
+      - For train01, not all the tools are used.
+        
+** TODO Load PIL or other image library
+   1. For now, I am going to use Keras
+   2. Pick one of the Keras Models under applications:
+      - The fastest is probably the best choice
+   3. Determine its input image size
+   4. Reduce train01.mp4 to frames of that size
+   5. Evalulate the model
+
+** IN-PROGRESS Pick a model that is already fine tuned for videos
+   1. DenseNet
+      - Not for videos...
+      - TF Imps:
+        - YixunaLi: NO weights, No finetuning
+        - LaurentMazare: NO weights, NO finetuning
+        - other one: No Weights...
+   2. CDC: Convolutional-De-Convolutional Networks for Precise Temporal Action Localization in Untrimmed Videos
+      - Won a temporal action compeition in 2017
+      - 
+
+
+** TODO Run a quick Keras Demo
