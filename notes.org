@@ -1,4 +1,4 @@
-#+TODO: TODO IN-PROGRESS WAITING DONE
+#+TODO: ABORTED TODO IN-PROGRESS WAITING DONE 
 #+STARTUP: showall
 Capstone -*- mode: org -*-
 
@@ -15,16 +15,71 @@ Capstone -*- mode: org -*-
    4. Reduce train01.mp4 to frames of that size
    5. Evalulate the model
 
-** IN-PROGRESS Pick a model that is already fine tuned for videos
+** IN-PROGRESS +Pick a model that is already fine tuned for videos+
+   Mostly finding models via ActivityNet 2017 tasks 3&4 submissions
    1. DenseNet
-      - Not for videos...
+      - Not for videos... but killer for still images
       - TF Imps:
         - YixunaLi: NO weights, No finetuning
         - LaurentMazare: NO weights, NO finetuning
         - other one: No Weights...
-   2. CDC: Convolutional-De-Convolutional Networks for Precise Temporal Action Localization in Untrimmed Videos
-      - Won a temporal action compeition in 2017
-      - 
+   2. CDC: Convolutional-De-Convolutional Networks for Precise Temporal \
+      Action Localization in Untrimmed Videos
+      - Cited by winners of 2017, 
+      - presented at CVPR 2017
+      - Can only be used with Caffe, and even then:
+        - Only with C3D, Facebooks improvement on Caffe for 3D convs
+        - This will not build on my mac, as I do not have a gpu
+        - It should work on aws
+   3. Single SHot Temporal Action Detection
+      - Tianwei Lin, Xu Zhao, Zheng Shou
+   4. Temporal Convolution Based Action Proposal
+      - Tianwei Lin, Xu Zhao, Zheng Shou
+   5. arxiv prepint:1608.00797
+   6. Segment-CNN
+      - Another entry to CVPR 2016
+      - Looks like it could be built for CPU based on config
+      - Will attempt Build
+      - Completed build, attempting Demo
+      - Demo does not work right now, running make runtest to see if it was built right
+      - =install_name_tool -change @rpath/libhdf5.10.dylib ~/anaconda2/lib/libhdf5.10.dylib .build_release/tools/caffe=
+      - =install_name_tool -change @rpath/libhdf5_hl.10.dylib ~/anaconda2/lib/libhdf5_hl.10.dylib .build_release/tools/caffe=
+      - And there was a huge crash with explosion, even with rebuilding and linking of CV
+        - openMPI, Numpy, OpenBlas...
+        - There involves opencv, so I will keep on eye on any other open cv errors
+   7. https://github.com/pengxj/action-faster-rcnn
+   8. https://bitbucket.org/sahasuman/bmvc2016_code
+   9. https://github.com/gkioxari/ActionTubes
+   10. https://github.com/jvgemert/apt
+   11. https://bitbucket.org/doneata/proposals
+       - Python and Matlab
+   12. http://www.cs.ucf.edu/~ytian/sdpm.html#Code
+       -Matlab
+   13. https://github.com/escorciav/daps
+       - Python, Theano, Pretrianed models
+   14. https://github.com/cabaf/sparseprop
+       - C3D and python
+   15. https://github.com/wanglimin/actionness-estimation/
+       - opencv, c++, denseflow, matlab
+   16. https://github.com/syyeung/frameglimpses
+       - Torch, end to end
+   17. https://github.com/gulvarol/ltc
+       - Torch, no weights
+   18. https://github.com/yjxiong/temporal-segment-networks
+       - Won ActivityNet 2016
+       - Caffe
+   19. https://github.com/atcold/pytorch-CortexNet
+       - Some weights
+       - pyTorch
+   20. https://github.com/amandajshao/Slicing-CNN
+       - Caffe
+   21. https://github.com/yhenon/keras-frcnn
+       - Keras
+       - Bounding Boxes
+   22. https://pjreddie.com/darknet/yolo/
+       - Needs bounding boxes...
+         
+        
 
-
-** TODO Run a quick Keras Demo
+        
+** TODO In case ^ fails, I should begin looking for a simple seg-net in keras
