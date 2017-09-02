@@ -1,11 +1,15 @@
+#+STARTUP: overview
 Capstone -*- mode: org -*-
 
 * 31/08/2017, THURSDAY
+  :PROPERTIES:
+  :VISIBILITY: children
+  :END:      
 ** DONE Create Summary of labels. 
    1. Write Script locally and test. 
       - For train01, not all the tools are used.
         
-** TODO Load PIL or other image library
+** DONE Load PIL or other image library
    1. For now, I am going to use Keras
    2. Pick one of the Keras Models under applications:
       - The fastest is probably the best choice
@@ -13,7 +17,7 @@ Capstone -*- mode: org -*-
    4. Reduce train01.mp4 to frames of that size
    5. Evalulate the model
 
-** ABORTED +Pick a model that is already fine tuned for videos+
+** DONE Pick a model that is already fine tuned for videos
    Mostly finding models via ActivityNet 2017 tasks 3&4 submissions
    1. DenseNet
       - Not for videos... but killer for still images
@@ -76,11 +80,15 @@ Capstone -*- mode: org -*-
        - Bounding Boxes
    22. https://pjreddie.com/darknet/yolo/
        - Needs bounding boxes...
+   23. All of this lead to me to c3d-keras, which seems to work
         
-** TODO In case ^ fails, I should begin looking for a simple seg-net in keras
+** ABORTED In case ^ fails, I should begin looking for a simple seg-net in keras
 
 
 * 01/09/2017, FRIDAY
+  :PROPERTIES:
+  :VISIBILITY: children
+  :END:      
 ** Review:
    - Yesterday, I did look at many interesting models, but none of them will
      work out of the box. Most would take quite a few hours simply to set up
@@ -93,14 +101,12 @@ Capstone -*- mode: org -*-
        - https://github.com/tensorflow/models/tree/master/video_prediction
    - PRO: It is definately properly installed on my local
 
-
 ** DONE List Keras pros and Cons
    - CON: No video recognition models under Applications
    - PRO: Possibly C3D under model Zoo
      - https://github.com/albertomontesg/keras-model-zoo/blob/master/kerasmodelzoo/models/c3d.py
 
-
-** WAITING pick slim or Keras
+** DONE pick slim or Keras
    - FAILED: goign with Keras and c3d in model zoo
    - Going to try harvitronix
    - Thgough harvitronix, found c3d-keras by axon-research
@@ -109,7 +115,7 @@ Capstone -*- mode: org -*-
      - Switching to AWS to speed things along...
    - WAITING FOR AWS TO LET ME HAVE A BLOODY INSTANCE
 
-** IN-PROGRESS Train and Eval a First S***y Model
+** TODO Train and Eval a First S***y Model
    - In leiu of AWS, I will try and get c3d-keras running locally
      - DONE Download weights 
      - DONE Download labels
@@ -124,10 +130,16 @@ Capstone -*- mode: org -*-
        - opencv is still not linked to homebrew...
        - but =pip install opencv-python= did the trick
    - Ok, so it works on the demo, but now I need to run with my stuff
-   - 
-
+   - Accomplished! We have output from a c3d model with a tf backend
+     - the output is for the 
 
 ** TODO TF throws warnings when running convert_caffe_model
    - If I am going to use c3d-keras, I should fix that.
    - I recorded the warnings in out.text
        
+
+
+* 02/09/2017, SATURDAY
+  :PROPERTIES:
+  :VISIBILITY: children
+  :END:      

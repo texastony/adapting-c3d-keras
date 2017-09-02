@@ -5,6 +5,7 @@ metastore_db
 .idea
 .bak
 .swp
+*.h5
 
 # General
 *.DS_Store
