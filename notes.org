@@ -1,5 +1,5 @@
 #+STARTUP: overview
-Capstone -*- mode: org -*-
+# -*- mode: org -*-
 
 * 31/08/2017, THURSDAY
   :PROPERTIES:
@@ -19,6 +19,7 @@ Capstone -*- mode: org -*-
 
 ** DONE Pick a model that is already fine tuned for videos
    Mostly finding models via ActivityNet 2017 tasks 3&4 submissions
+
    1. DenseNet
       - Not for videos... but killer for still images
       - TF Imps:
@@ -81,7 +82,7 @@ Capstone -*- mode: org -*-
    22. https://pjreddie.com/darknet/yolo/
        - Needs bounding boxes...
    23. All of this lead to me to c3d-keras, which seems to work
-        
+       
 ** ABORTED In case ^ fails, I should begin looking for a simple seg-net in keras
 
 
@@ -133,13 +134,71 @@ Capstone -*- mode: org -*-
    - Accomplished! We have output from a c3d model with a tf backend
      - the output is for the 
 
-** TODO TF throws warnings when running convert_caffe_model
+** PARKING TF throws warnings when running convert_caffe_model
    - If I am going to use c3d-keras, I should fix that.
    - I recorded the warnings in out.text
        
 
 
-* 02/09/2017, SATURDAY
+* 02/09/2017, Labor Day weekend
   :PROPERTIES:
   :VISIBILITY: children
   :END:      
+** Review:
+   Last night, I eneded with an output from the network that was a 500
+   long confidence vector, which is what I expected. The original
+   model was trained on a dataset with 500 labels. Also, the network
+   would like images to be 112 by 112, while the preprosccesing would
+   like the network to be 128 by 178. Now, the first goal should be to
+   adapt the top layer for my labels, which is an 18 long vector. That
+   would let me eval the network. Then I can look at clever
+   downsampling methods with convolutional layers with large strides,
+   pooling, etc. Those will probably be trained by autoencoders, which
+   I will have to review. I will also need to review papers on
+   downsampling. 
+** DONE Push to github
+   - Branch name changed to pre-alpha
+   - github repo intialized
+   - issue with file size of weight matrix
+     - This is why chuckcho downloaded the wieghts from another site
+     - Which is what I will do.
+** DONE Replace top-layer(s) with fcs for target vector 
+** IN-PROGRESS Train new top-layer(s) with autoencoding
+   - After reading: [[https://blog.keras.io/building-autoencoders-in-keras.html][Keras Blog on Autoencoders]]
+   - It is clear to me that autoencoders are out of fasion...
+   - [[https://medium.com/towards-data-science/transfer-learning-using-keras-d804b2e04ef8][Medium Example]] on Freezing weights and fine-tuning a network
+   - I will just follow that instead
+   - Also, reading the [[https://arxiv.org/abs/1412.0767][C3D paper]], which I should have read a long time ago
+     * They recommend cutting at fc6.
+
+
+* 05/09/2017, Tuesday
+  :PROPERTIES:
+  :VISIBILITY: children
+  :END:      
+** TODO script AWS for training top-layer(s)
+** IN-PROGRESS Create data streamer
+   - Can use from keras.preprocessing.image.ImageDataGenerator
+   - Will need to modify to ensure that every batch has 8 frame overlay
+   - Can probably extend to use cv2 resize
+** PARKING Adapt cv2 code for gpu
+   - Does python-cv support the openCV gpu module? NO
+   - Solution:
+     - [[https://stackoverflow.com/questions/42125084/accessing-opencv-cuda-functions-from-python-no-pycuda][ostrumvulpes of StackOverflow.]]
+   - Great, more building is in my future
+   - Also, will not build without nvidia drivers, so will have to build on AWS
+   - On the otherhand, God Bless ostrumvulpes of StackOverflow. 
+     - What a champion
+       
+** PARKING Train bottom layers
+    - Following  [[http://dblp.org/rec/journals/corr/GerasWKMC17][K Geras, K Cho, et al.]]
+    - Can still do my large stride for image reduction trick
+    - Can intialize the weights with lower levels of C3D...
+    - Image is reduced by the layers stride.
+    - So, with an image that is 1920 by 1080, to get to 112 by 112
+      - 1920/112 is 17, 1080/112 is 9
+      - There is a debate to be had about processing the image in a square shape...
+      - No need to convolv in time when compressing, will let c3d handle that.
+    - Will get to this if first results are poor     
+    - Scratch code for it stashed in src/down_conv.py
+
