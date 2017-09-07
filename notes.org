@@ -180,7 +180,11 @@
 ** IN-PROGRESS Create data streamer
    - Can use from keras.preprocessing.image.ImageDataGenerator
    - Will need to modify to ensure that every batch has 8 frame overlay
-   - Can probably extend to use cv2 resize
+   - Can probably extend to use cv2 resize (MUST USE)
+   - Cannot use ImageDataGenerator, but can create my own generator no problem
+     - Right, cv2, a little bit of a pain in the...
+   - We, apperently, are working Height by Width... who knew?
+     
 ** PARKING Adapt cv2 code for gpu
    - Does python-cv support the openCV gpu module? NO
    - Solution:
@@ -202,3 +206,16 @@
     - Will get to this if first results are poor     
     - Scratch code for it stashed in src/down_conv.py
 
+
+
+* 06/08/2017, Wednesday
+** TODO Proper ReadME
+** TODO Proper Write Up
+** PARKING Notebook example
+** PARKING Requirements
+** TODO script AWS for training top-layer(s)
+   - Zsh will tell python which numbers numbers to process
+   - Zsh will launch python at the top directory
+   - Start with one thread
+   - Then try cv2 with gpu
+   - If that fails, try multiprocessing

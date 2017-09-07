@@ -3,12 +3,12 @@ from cpython.ref cimport PyObject
 
 # References PyObject to OpenCV object conversion code borrowed from OpenCV's own conversion file, cv2.cpp
 cdef extern from 'pyopencv_converter.cpp':
-    cdef PyObject* pyopencv_from(const Mat& m)
-    cdef bool pyopencv_to(PyObject* o, Mat& m)
+    cdef PyObject * pyopencv_from(const Mat & m)
+    cdef bool pyopencv_to(PyObject * o, Mat & m)
 
-cdef extern from 'opencv2/imgproc.hpp' namespace 'cv':
+cdef extern from 'opencv2/imgproc/imgproc.hpp' namespace 'cv':
     cdef enum InterpolationFlags:
-        INTER_NEAREST = 0
+        INTER_AREA = 3
     cdef enum ColorConversionCodes:
         COLOR_BGR2GRAY
 
@@ -32,11 +32,11 @@ cdef extern from 'opencv2/core/core.hpp' namespace 'cv':
     cdef cppclass Mat:
         Mat() except +
         void create(int, int, int) except +
-        void* data
+        void * data
         int rows
         int cols
 
-cdef extern from 'opencv2/core/cuda.hpp' namespace 'cv::cuda':
+cdef extern from 'opencv2/gpu/gpu.hpp' namespace 'cv::gpu':
     cdef cppclass GpuMat:
         GpuMat() except +
         void upload(Mat arr) except +
@@ -44,7 +44,11 @@ cdef extern from 'opencv2/core/cuda.hpp' namespace 'cv::cuda':
     cdef cppclass Stream:
         Stream() except +
 
-cdef extern from 'opencv2/cudawarping.hpp' namespace 'cv::cuda':
-    cdef void warpPerspective(GpuMat src, GpuMat dst, Mat M, Size dsize, int flags, int borderMode, Scalar borderValue, Stream& stream)
+cdef extern from 'opencv2/gpu/gpu.hpp' namespace 'cv::gpu':
+    # cdef void warpPerspective(GpuMat src, GpuMat dst, Mat M, Size dsize, int flags, int borderMode, Scalar borderValue, Stream& stream)
+    cdef void resize(const GpuMat& src, GpuMat& dst, Size dsize, double fx, double fy, int interpolation, Stream & stream)
     # Function using default values
-    cdef void warpPerspective(GpuMat src, GpuMat dst, Mat M, Size dsize, int flags)
+    # cdef void warpPerspective(GpuMat src, GpuMat dst, Mat M, Size dsize, int flags)
+    cdef void resize(const GpuMat & src, GpuMat & dst, Size dsize, double fx=0, double fy=0, int interpolation = INTER_LINEAR, Stream & stream = Stream: : Null());
+
+    # void resize(const GpuMat& src, GpuMat& dst, Size dsize, double fx=0, double fy=0, int interpolation = INTER_LINEAR, Stream& stream = Stream::Null());
