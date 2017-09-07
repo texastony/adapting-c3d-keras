@@ -28,7 +28,7 @@ class Progbar(object):
         self.verbose = verbose
         self.text = "  " + text
 
-    def update(self, current, values=None, force=False):
+    def update(self, current, text=None, values=None, force=False):
         """Updates the progress bar.
         # Arguments
             current: Index of current step.
@@ -36,6 +36,8 @@ class Progbar(object):
                 The progress bar will display averages for these values.
             force: Whether to force visual progress update.
         """
+        if text is not None:
+            self.text = "  " + text
         values = values or []
         for k, v in values:
             if k not in self.sum_values:

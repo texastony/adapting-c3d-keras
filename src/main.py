@@ -4,7 +4,6 @@ from keras.models import model_from_json
 from keras.backend import get_session
 from keras.optimizers import SGD
 from keras.losses import mean_squared_error
-from keras.preprocessing.image import ImageDataGenerator
 import os
 import cv2
 
@@ -23,80 +22,14 @@ def main():
     model.load_weights(model_weight_filename)
 
     print("[Info] Loading labels...")
-    labels_df = pd.read_csv('../train_labels/train01.csv',  index_col=0)
+    # TODO
 
-    X = videoGetter('../data/train01.mp4', False, True).astype(np.float32)
-    X = X[140:140 + 16]
+    print("[Info] Loading videos")
     mean_cube = np.load('models/train01_16_128_171_mean.npy')
     mean_cube = np.transpose(mean_cube, (1, 2, 3, 0))
 
-    X -= mean_cube
-    X = X[:, 8:120, 30:142, :]
     output = model.predict_on_batch(np.array([X]))
     print(output)
-
-
-def show_img(array):
-    cv2.namedWindow('image', flags=[cv2.WINDOW_NORMAL, cv2.WINDOW_KEEPRATIO,
-                                    cv2.WINDOW_GUI_EXPANDED])
-    cv2.waitKey(1)
-    cv2.imshow('image', array)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    cv2.waitKey(1)
-
-
-def video_tester(filename='../data/train01.mp4'):
-    global DEST_IMG_SIZE, cap, buf, temp, fc, ret, frameCount, frameHeight, frameWidth
-    DEST_IMG_SIZE = (171, 128)
-    print("[Info] Reading Video")
-    cap = cv2.VideoCapture(filename)
-    frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    # Note that for some reason, cv2 reads images hieght and then width
-    buf = np.empty(
-        (frameCount, DEST_IMG_SIZE[1], DEST_IMG_SIZE[0], 3), np.dtype('uint8'))
-    temp = np.empty((frameWidth, frameHeight, 3), np.dtype('uint8'))
-    fc = 0
-    ret = True
-    ret, temp = cap.read()
-    buf[fc] = cv2.resize(src=temp, dst=buf[fc].shape, dsize=DEST_IMG_SIZE,
-                         interpolation=cv2.INTER_AREA)
-    fc += 1
-    # cap.release()
-
-
-def videoGetter(filename, try_save=False, try_reload=True):
-    DEST_IMG_SIZE = (171, 128)
-    if (try_reload or try_save):
-        chk_pth = filename.rsplit('/', 1)[1].rsplit('.', 1)[0]
-        chk_pth = OUTDIR + "/preprocessed/{}.npy".format(chk_pth)
-        if os.path.isfile(chk_pth) and try_reload:
-            print("Found Preprocessed")
-            return np.load(chk_pth)
-    print("[Info] Reading Video")
-    cap = cv2.VideoCapture(filename)
-    frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    # Note that for some reason, cv2 reads images hieght and then width
-    buf = np.empty(
-        (frameCount, DEST_IMG_SIZE[1], DEST_IMG_SIZE[0], 3), np.dtype('uint8'))
-    temp = np.empty((frameWidth, frameHeight, 3), np.dtype('uint8'))
-    fc = 0
-    ret = True
-    while (fc < frameCount and ret):
-        ret, temp = cap.read()
-        buf[fc] = cv2.resize(src=temp, dst=buf[fc].shape, dsize=DEST_IMG_SIZE,
-                             interpolation=cv2.INTER_AREA)
-        fc += 1
-    cap.release()
-    del cap, temp
-    if try_save:
-        np.save(chk_pth, buf)
-
-    return buf
 
 
 def load_model():

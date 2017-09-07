@@ -116,7 +116,7 @@
      - Switching to AWS to speed things along...
    - WAITING FOR AWS TO LET ME HAVE A BLOODY INSTANCE
 
-** TODO Train and Eval a First S***y Model
+** WAITING Train and Eval a First S***y Model
    - In leiu of AWS, I will try and get c3d-keras running locally
      - DONE Download weights 
      - DONE Download labels
@@ -163,7 +163,7 @@
      - This is why chuckcho downloaded the wieghts from another site
      - Which is what I will do.
 ** DONE Replace top-layer(s) with fcs for target vector 
-** IN-PROGRESS Train new top-layer(s) with autoencoding
+** ABORTED Train new top-layer(s) with autoencoding
    - After reading: [[https://blog.keras.io/building-autoencoders-in-keras.html][Keras Blog on Autoencoders]]
    - It is clear to me that autoencoders are out of fasion...
    - [[https://medium.com/towards-data-science/transfer-learning-using-keras-d804b2e04ef8][Medium Example]] on Freezing weights and fine-tuning a network
@@ -176,7 +176,7 @@
   :PROPERTIES:
   :VISIBILITY: children
   :END:      
-** TODO script AWS for training top-layer(s)
+** DONE script AWS for training top-layer(s)
 ** IN-PROGRESS Create data streamer
    - Can use from keras.preprocessing.image.ImageDataGenerator
    - Will need to modify to ensure that every batch has 8 frame overlay
@@ -209,6 +209,9 @@
 
 
 * 06/08/2017, Wednesday
+  :PROPERTIES:
+  :VISIBILITY: children
+  :END:      
 ** TODO Proper ReadME
 ** TODO Proper Write Up
 ** PARKING Notebook example
@@ -219,3 +222,37 @@
    - Start with one thread
    - Then try cv2 with gpu
    - If that fails, try multiprocessing
+
+
+* 07/08/2017, Thursday
+  :PROPERTIES:
+  :VISIBILITY: children
+  :END:      
+** Review:
+   - Never, ever, use Amazon linux. It is stupid and cost me a ton of time
+   - That being said, I know a ton more regex now, as well zsh and top
+   - I have all the movies being converted now, or they have already been converted
+   - I should write something to check the npy array's integrity, subtract the mean, and carry on
+   - And I need to npy the cvs files
+   - Put the model on AWS
+** DONE npy the cvs files
+** DONE chk and subtract mean on train vids
+** DONE write cmd line for getting aws address give instance-id
+** PARKING write cmd line for getting instance id given name
+   - would start with =aws ec2 describe-instance=
+** IN-PROGRESS Create Data Streamer
+   - 8 Frame overlap is crucial
+   - lets start with 1 minute chucks as our unit
+     - Assume 24 fps, so 24 * 60 = 1440
+   - Arguments:
+     - Label dir
+     - npy dir
+     - continous region size
+     - random seed
+   - Can use sklearn.model_selection.StratifiedKFold
+     - But, not really, because I have to keep data together 
+   - Simple, really, load all labels into a dataframe
+   - For each video, divide into chunks as close to region_size as possible
+   - store all the data, we have 61 GiB of memory.
+** PARKING Data Streamer could have its own thread
+** TODO data_feed documentation

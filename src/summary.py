@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
+import cv2
 
 
 def main(args):
@@ -15,6 +16,16 @@ def main(args):
                                            len(timeline[timeline == 0.5])))
         file_name = file_name.rsplit('.', 1)[0] + '.npy'
         np.save(file_name, timeline.values)
+
+
+def show_img(array):
+    cv2.namedWindow('image', flags=[cv2.WINDOW_NORMAL, cv2.WINDOW_KEEPRATIO,
+                                    cv2.WINDOW_GUI_EXPANDED])
+    cv2.waitKey(1)
+    cv2.imshow('image', array)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    cv2.waitKey(1)
 
 
 def test(args):
