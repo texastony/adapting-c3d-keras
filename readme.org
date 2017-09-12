@@ -208,7 +208,7 @@
 
 
 
-* 06/08/2017, Wednesday
+* 06/09/2017, Wednesday
   :PROPERTIES:
   :VISIBILITY: children
   :END:      
@@ -224,7 +224,7 @@
    - If that fails, try multiprocessing
 
 
-* 07/08/2017, Thursday
+* 07/09/2017, Thursday
   :PROPERTIES:
   :VISIBILITY: children
   :END:      
@@ -258,7 +258,7 @@
 ** TODO data_feed documentation
 
 
-* 08/08/2017, Friday
+* 08/09/2017, Friday
   :PROPERTIES:
   :VISIBILITY: children
   :END:      
@@ -280,3 +280,49 @@
    - store all the data, we have 61 GiB of memory.
 
 ** PARKING Use h5py and multiprocessing to really pick up the pace on data_feed
+
+
+* 09/09/2017, Weekend
+  :PROPERTIES:
+  :VISIBILITY: children
+  :END:
+** Review:
+   Jeff needs me to make something that works. My presentation was not terrible,
+but... yeah, I was supposed to have a minable viable product and I do not not, and 
+do not know how long it will actually take to get one up. Historically, I do not get 
+much done on the weekends. It is already 5:40PM. I can use an AWS intance to extract 
+the features with... No I got it I know how to make this work
+** IN-PROGRESS Quick Solution
+   - Load one sample at a time, extract all the features and save the flattened feature 
+     maps.
+   - Train 2 fcs on those maps. 
+** DONE Create snapshot, and load it to bigger instance 
+   - Snapshots apperently take a long time, which is upsetting.
+
+** DONE Quick dirty code for extracting features
+** PARKING Optimize feature extraction
+
+* 10/10/2017, Monday
+   :PROPERTIES:
+   :VISIBILITY: children
+   :END:      
+** Review
+   On Sunday, I kicked some ass. I figured out a dirty way to extract
+features using the c3d network, and I can now train a regular nn on 
+the extracted features. I could do much better optimization on the 
+feature extraction process, but for now it works. I should note...
+ We are not seeing a reduction in size at all... I mean, just a tiny amount...
+I am going to look into that. ETC is 1:00PM. 
+** DONE Check output
+  - The output is np.float64, which was not expected... and is likely a massive
+slow down in computation... very upsetting.
+  - But, it looks valid, so... on to figuring out how to train a network
+** TODO Train Top Layers
+   - Going to go in straight TF as I think I can better manage GPUs there
+** TODO Weighting Classes
+** TODO Analyze labels more
+   - summary.py has code that will show class representation in different
+samples. 
+   - Many classes are only represented in some videos
+   - Now, I should find something that looks at rate duration.
+   - Nope,
