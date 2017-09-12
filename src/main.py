@@ -1,46 +1,56 @@
-import pandas as pd
+import os
+from argparse import ArgumentParser
+import tensorflow as tf
 import numpy as np
-from keras.models import model_from_json
 from keras.backend import get_session
 from keras.optimizers import SGD
-from keras.losses import mean_squared_error
-import os
-import cv2
-
-OUTDIR = os.path.relpath('../out/')
-DATADIR = os.path.relpath('../data')
+from keras.metrics import mean_squared_error
+from keras.models import load_model
+from keras import backend as K
+from progbar import Progbar
 
 
-def main():
-    model_weight_filename = 'models/sports1M_weights_tf.h5'
-    model_json_filename = 'models/sports1M_weights_tf.json'
+os.chdir('/home/ubuntu/capstone')
+OUTDIR = os.path.relpath('out')
+DATADIR = os.path.relpath('data/preprocessed')
+MODEL_DIR = os.path.relpath('model')
+UPDT_FRQ = 50
+# main(['test00.npy'])
 
-    print("[Info] Reading model architecture...")
-    model = model_from_json(open(model_json_filename, 'r').read())
-
-    print("[Info] Loading model weights...")
-    model.load_weights(model_weight_filename)
-
-    print("[Info] Loading labels...")
-    # TODO
-
-    print("[Info] Loading videos")
-    mean_cube = np.load('models/train01_16_128_171_mean.npy')
+def main(filenames, device='/gpu:2'):
+    print("[Info] Loading Model")
+    sess = tf.Session()
+    K.set_session(sess)
+    model = load_model(os.path.join(MODEL_DIR, 'from_tony.h5'))
+    to_tf = tf.placeholder(tf.float32, shape=(None, 16, 112, 112, 3))
+    output_tensor = model(to_tf)
+    mean_cube = np.load(os.path.join(MODEL_DIR, 'train01_16_128_171_mean.npy'))
     mean_cube = np.transpose(mean_cube, (1, 2, 3, 0))
-
-    output = model.predict_on_batch(np.array([X]))
-    print(output)
-
-
-def load_model():
-    global model
-    model_weight_filename = 'models/sports1M_weights_tf.h5'
-    model_json_filename = 'models/sports1M_weights_tf.json'
-    print("[Info] Reading model architecture...")
-    model = model_from_json(open(model_json_filename, 'r').read())
-    print("[Info] Loading model weights...")
-    model.load_weights(model_weight_filename)
-
+    to_net = np.empty((16, 112, 112, 3))
+    for filename in filenames:
+        print("[Info] Loading videos")
+        vid = np.load(os.path.join(OUTDIR, 'preprocessed', filename)).astype(np.float32)
+        temp = np.zeros((16,)+vid.shape[1:])
+        end_frame = vid.shape[0]
+        output = np.empty((vid.shape[0], 8192))
+        status = Progbar(target=end_frame, text=filename.rsplit('.', 1)[0])
+        for frm_ind, frame in enumerate(vid):
+            if frm_ind < 8:
+                temp[(8 - frm_ind):] = vid[:frm_ind + 8]
+                temp[:(8 - frm_ind)] = 0
+            elif end_frame < frm_ind + 8:
+                temp[:(16 + (end_frame - (frm_ind + 8)))] = vid[frm_ind - 8:]
+            else:
+                temp[:, :, :, :] = vid[(frm_ind - 8):(frm_ind + 8), :, :, :]
+            temp -= mean_cube
+            to_net[:, :, :, :] = temp[:, 8:120, 30:142, :]
+            output[frm_ind] = sess.run(output_tensor,
+                                       feed_dict={to_tf: np.array([to_net])})
+            # with tf.device(device):
+            #     output[frm_ind] = model.predict_on_batch(np.array([to_net]))
+            if frm_ind % 50:
+                status.update(frm_ind)
+        np.save(os.path.join(OUTDIR, 'extracted', filename), output)
 
 def prnt_mdl_outs(model, batch_size=1):
     last_output = (batch_size, 16, 112, 112, 3)
@@ -78,9 +88,11 @@ def modify_model(model, output_units=18,
     #  Change output vector for new use
     model.layers[-1].units = output_units
     #  Reset top Layers
-    reinitialize_layer_weigt(model.layers[14:])
+    # reinitialize_layer_weigt(model.layers[14:])
+    model.layers = model.layers[:15]
     model.compile(optimizer=optimizer,
                   loss=loss)
+    return model
 
 
 def reinitialize_layer_weigt(layers):
@@ -97,3 +109,14 @@ def reinitialize_layer_weigt(layers):
                 initializer_method = getattr(v_arg, 'initializer')
                 initializer_method.run(session=session)
                 print('reinitializing layer {}.{}'.format(layer.name, v))
+    return None
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("filenames", nargs='*', type=str,
+                        help="Which videos to process")
+    # parser.add_argument("device", nargs=1, type=str,
+    #                     help="Which gpu to use")
+    args = parser.parse_args()
+    main(args.filenames)

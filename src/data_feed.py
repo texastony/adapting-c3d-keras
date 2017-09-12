@@ -1,16 +1,40 @@
 import numpy as np
 import pandas as pd
 from argparse import ArgumentParser
-from progbar import Progbar
+# from progbar import Progbar
 # from sklearn.model_selection import KFold
 # from os.path import isdir
 # from os import listdir
 import os
 
 
+def _load_all_frm_dir(direc, type_str='float16'):
+    shapes = [
+        np.load(direc + filename).shape for filename in os.listdir(direc)]
+
+    def get_0(shape): return shape[0]
+
+    total_len = sum(map(get_0, shapes))
+    rtn_arr = np.empty((),
+                       dtype=)
+    del get_0
+    rtn_ind = 0
+    for _shape, filename in zip(shapes, os.listdir(direc)):
+        name = np.asarray(
+            ([_strip_all(filename)] * _shape[0]), dtype=np.float16)
+        rtn_arr[rtn_ind:rtn_ind + _shape[0],
+                1: _shape[1] + 1] = np.load(direc + filename)
+        rtn_arr[rtn_ind: rtn_ind + _shape[0], 0] = name
+        rtn_ind += _shape[0]
+    return rtn_arr
+
+
+def _strip_all(filename): return int(
+    filename.rsplit('.')[0].split('train')[-1])
+
+
 def _strip_names(direc):
-    return [mem.rsplit('.')[0] for mem in
-            os.listdir(direc)]
+    return [mem.rsplit('.')[0] for mem in os.listdir(direc)]
 
 
 class Data_Feed(object):
@@ -43,8 +67,6 @@ class Data_Feed(object):
                 return False
         return True
 
-    def _load_all(self, region_size):
-
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -60,4 +82,3 @@ if __name__ == "__main__":
                         help="Random seed ")
 
     args = parser.parse_args()
-    main(args)
