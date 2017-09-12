@@ -302,6 +302,7 @@ the features with... No I got it I know how to make this work
 ** DONE Quick dirty code for extracting features
 ** PARKING Optimize feature extraction
 
+
 * 10/10/2017, Monday
    :PROPERTIES:
    :VISIBILITY: children
@@ -326,3 +327,17 @@ samples.
    - Many classes are only represented in some videos
    - Now, I should find something that looks at rate duration.
    - Nope,
+
+
+* 11/10/2017, Tuesday
+   :PROPERTIES:
+   :VISIBILITY: children
+   :END: 
+** Review
+   Ok, I just need to write a function that generates samples 
+based on class weight, and then run the training program, 
+which I also need to write. The training part could take both 
+a long time to write and to run... but I may get both done today
+** TODO Train Top Layers: 4 hr
+   - Going to go in straight TF as I think I can better manage GPUs there
+** TODO Weighting Classes: 4 hr
