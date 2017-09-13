@@ -1,6 +1,5 @@
 from __future__ import division
 from __future__ import print_function
-from sys import stderr
 from argparse import ArgumentParser
 from os import listdir, curdir
 from os.path import realpath
@@ -10,6 +9,7 @@ import pandas as pd
 
 
 def eprint(*args, **kwargs):
+    from sys import stderr
     print(*args, file=stderr, **kwargs)
 
 
@@ -19,7 +19,7 @@ def main(filenames, path, command='class_rep', classes=[],
     OUTFILE = command + '.h5'
     if outname is not None:
         if rtn_lens:
-            outname += '_rtn_lens_'
+            OUTFILE = 'lens.hf'
         OUTFILE = outname + '_' + OUTFILE
 
     def chk_csv(string): return True if '.csv' in string else False
@@ -41,8 +41,8 @@ def main(filenames, path, command='class_rep', classes=[],
                                     columns=[filename])
         if 'class_rep' in command:
             label_df[filename] = calc_cls_rep(file_df)
-        if 'rate_dur' in command:
-            label_df[filename] = calc_rate_dur(
+        if 'runs' in command:
+            label_df[filename] = calc_runs(
                 file_df, file_df.columns.values,
                 rtn_lens=rtn_lens, rtn_runs=rtn_runs)
         del file_df
@@ -87,7 +87,7 @@ def find_runs(df, col, target=1.0):
     return map(get_head_tail, temp), map(get_lens, temp)
 
 
-def calc_rate_dur(file_df, cols, rtn_runs=True, rtn_lens=False):
+def calc_runs(file_df, cols, rtn_runs=True, rtn_lens=False):
     """Returns the head and tails of runs and their duration
 
     Args:
@@ -194,9 +194,9 @@ def print_uniques(label_df):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("command", nargs=1, type=str, default='class_rep',
-                        help="Should be one of: class_rep | rate_dur."
+                        help="Should be one of: class_rep | runs."
                         "class_rep: calculate how class frequency in label"
-                        "files rate_dur: calculate classes intervals in"
+                        "files runs: calculate classes intervals in"
                         "label files")
     parser.add_argument("--directory", nargs='?', type=str, default=curdir,
                         const=curdir,
@@ -215,7 +215,7 @@ if __name__ == "__main__":
                         help="prefix for output files")
     parser.add_argument("--lens",
                         action='store_true',
-                        help="Used with rate_dur to find the lengths"
+                        help="Used with runs to find the lengths"
                         " instead of the head and tails of runs.")
     args = parser.parse_args()
     if args.files is not None:
@@ -225,8 +225,8 @@ if __name__ == "__main__":
             filenames = listdir(args.directory)
         except IOError:
             eprint("Parsing Directory raised an error")
-    print(args)
-    if args.lens is not None:
+    # print(args)
+    if args.lens is True:
         main(filenames, args.directory, args.command[0], args.classes,
              args.outname, rtn_lens=True, rtn_runs=False)
     main(filenames, args.directory,
