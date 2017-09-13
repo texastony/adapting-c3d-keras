@@ -21,8 +21,7 @@ def getMetaData(filename):
         return text
     try:
         metadata = hachoir_metadata.extractMetadata(parser)
-    except HachoirError, err:
-        print "Metadata extraction error: %s" % unicode(err)
+    except HachoirError:
         metadata = None
     if not metadata:
         print >>sys.stderr, "Unable to extract metadata"

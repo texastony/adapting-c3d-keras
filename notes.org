@@ -292,7 +292,7 @@ but... yeah, I was supposed to have a minable viable product and I do not not, a
 do not know how long it will actually take to get one up. Historically, I do not get 
 much done on the weekends. It is already 5:40PM. I can use an AWS intance to extract 
 the features with... No I got it I know how to make this work
-** IN-PROGRESS Quick Solution
+** DONE Quick Solution
    - Load one sample at a time, extract all the features and save the flattened feature 
      maps.
    - Train 2 fcs on those maps. 
@@ -342,9 +342,25 @@ a long time to write and to run... but I may get both done today
    - Going to go in straight TF as I think I can better manage GPUs there
 ** DONE Weighting Classes: 4 hr, actually 8+ hrs
    - Well, I have program that will find all the start and end points in the labels
-of variouis tools, so I can generate samples with that. 
-** TODO Generate Training samples: 4 hr
+   of variouis tools, so I can generate samples with that. 
+** TODO Generate Training samples: 2 hr
    - Jeff wants five classes: ['Nothing', 'micromanipulator',
      'phacoemulsifier handpiece', 'irrigation/aspiration
      handpiece','capsulorhexis cystotome']
-   
+
+
+* 12/10/2017, Wednesday
+   :PROPERTIES:
+   :VISIBILITY: children
+   :END:      
+** Review
+   I have a table with all the heads and tails of tool frames, so it
+   should be trivial to select the frames I want in the sample, and
+   then I just need to write the final network code and pray that it
+   all works...
+** TODO Train Top Layers: 4 hr
+   - Going to go in straight TF as I think I can better manage GPUs
+     there
+** TODO Random Picking of training and Validation: 2 hrs
+   - vidoes >= 20 will be in the validation set, while videos less
+     than that will be in the training set. For now.

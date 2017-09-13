@@ -14,15 +14,19 @@ def eprint(*args, **kwargs):
 
 
 def main(filenames, path, command='class_rep', classes=[],
-         rtn_lens=False, rtn_runs=True):
+         outname=None, rtn_lens=False, rtn_runs=True):
     PATH = realpath(path)
     OUTFILE = command + '.h5'
+    if outname is not None:
+        if rtn_lens:
+            outname += '_rtn_lens_'
+        OUTFILE = outname + '_' + OUTFILE
 
     def chk_csv(string): return True if '.csv' in string else False
 
     def get_path(filename): return pathjoin(PATH, filename)
     filenames = filter(chk_csv, filenames)
-    if OUTFILE in listdir(PATH):
+    if (OUTFILE in listdir(PATH)) and (outname is None):
         label_df = pd.read_hdf(pathjoin(PATH, OUTFILE))
     for filename in filenames:
         try:
@@ -43,7 +47,8 @@ def main(filenames, path, command='class_rep', classes=[],
                 rtn_lens=rtn_lens, rtn_runs=rtn_runs)
         del file_df
     if command == 'class_rep':
-        plt_class_rep(label_df, save_file=get_path(command + '.png'))
+        plt_class_rep(label_df, save_file=get_path(
+            outname + '_' + command + '.png'))
     label_df.to_hdf(get_path(OUTFILE), 'w')
     return label_df
 
@@ -162,7 +167,7 @@ def plt_class_rep(label_df, save_file='class_rep.png'):
                                        get_cmap('Set1')]))
     mymap = mcolors.LinearSegmentedColormap.from_list('my_colormap', colors)
     fig, ax = plt.subplots(figsize=(20, 14))
-    label_df.plot.barh(stacked=True, log=True, ax=ax, cmap=mymap)
+    label_df.plot.barh(stacked=True, log=False, ax=ax, cmap=mymap)
     ax.set_title('Class Representation in samples')
     plt.savefig(save_file)
     plt.close('all')
@@ -188,12 +193,11 @@ def print_uniques(label_df):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("command", nargs='?', type=str, default='class_rep',
-                        const='class_rep',
-                        help="Should be one of: class_rep | rate_dur\n"
+    parser.add_argument("command", nargs=1, type=str, default='class_rep',
+                        help="Should be one of: class_rep | rate_dur."
                         "class_rep: calculate how class frequency in label"
-                        "files\n rate_dur: calculate classes intervals in"
-                        "label files\n")
+                        "files rate_dur: calculate classes intervals in"
+                        "label files")
     parser.add_argument("--directory", nargs='?', type=str, default=curdir,
                         const=curdir,
                         help="Path to Directory containing"
@@ -205,13 +209,25 @@ if __name__ == "__main__":
     parser.add_argument("--files", nargs='?', type=str, default=None,
                         const=None,
                         help="files to analyze. Will still scan for"
-                        "pre-existing summary file")
+                        " pre-existing summary file")
+    parser.add_argument("--outname", nargs='?', type=str, default=None,
+                        const=None,
+                        help="prefix for output files")
+    parser.add_argument("--lens",
+                        action='store_true',
+                        help="Used with rate_dur to find the lengths"
+                        " instead of the head and tails of runs.")
     args = parser.parse_args()
     if args.files is not None:
-        filenames = args.files
+        filenames = args.files.split(',')
     else:
         try:
             filenames = listdir(args.directory)
         except IOError:
             eprint("Parsing Directory raised an error")
-    main(filenames, args.directory, args.command, args.classes)
+    print(args)
+    if args.lens is not None:
+        main(filenames, args.directory, args.command[0], args.classes,
+             args.outname, rtn_lens=True, rtn_runs=False)
+    main(filenames, args.directory,
+         args.command[0], args.classes, args.outname)
