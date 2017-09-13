@@ -13,7 +13,8 @@ def eprint(*args, **kwargs):
     print(*args, file=stderr, **kwargs)
 
 
-def main(filenames, path, command='class_rep', classes=[]):
+def main(filenames, path, command='class_rep', classes=[],
+         rtn_lens=False, rtn_runs=True):
     PATH = realpath(path)
     OUTFILE = command + '.h5'
 
@@ -26,26 +27,28 @@ def main(filenames, path, command='class_rep', classes=[]):
     for filename in filenames:
         try:
             file_df = pd.read_csv(get_path(filename), index_col=0)
-            filename = _strip_filename(filename)
-            if 'label_df' not in locals():
-                ind = file_df.columns
-                ind = np.hstack((ind, np.array(['Nothing'])))
-                label_df = pd.DataFrame(index=ind,
-                                        columns=(filename,))
-                del ind
-            if 'class_rep' in command:
-                label_df[filename] = calc_cls_rep(file_df)
-                del file_df
-            elif 'rate_dur' in command:
-                pass
         except IOError:
             eprint("{} file reading error. Does it exist?".format(filename))
+            continue
+        filename = _strip_filename(filename)
+        if 'label_df' not in locals():
+            ind = np.hstack((file_df.columns.values, np.array(['Nothing'])))
+            label_df = pd.DataFrame(index=ind,
+                                    columns=[filename])
+        if 'class_rep' in command:
+            label_df[filename] = calc_cls_rep(file_df)
+        if 'rate_dur' in command:
+            label_df[filename] = calc_rate_dur(
+                file_df, file_df.columns.values,
+                rtn_lens=rtn_lens, rtn_runs=rtn_runs)
+        del file_df
     if command == 'class_rep':
         plt_class_rep(label_df, save_file=get_path(command + '.png'))
     label_df.to_hdf(get_path(OUTFILE), 'w')
+    return label_df
 
 
-def find_runs(df, col):
+def find_runs(df, col, target=1.0):
     """Returns runs of values
 
     Args:
@@ -58,6 +61,10 @@ def find_runs(df, col):
             runs has the head and tail of the runs
             lens has the length of the runs
     """
+    if col == 'Nothing':
+        df['sum'] = df.sum(axis=1)
+        col = 'sum'
+
     def get_head_tail(arr): return (arr[0], arr[-1])
 
     def get_lens(arr): return len(arr)
@@ -65,21 +72,17 @@ def find_runs(df, col):
     df['block'] = (df[col].shift(1) != df[col]).astype(int).cumsum()
     out = df.reset_index().groupby([col, 'block'])[
         df.index.name].apply(np.array)
-    if 1 not in out.index.levels[0]:
-        return None
-    rtn_df = pd.DataFrame(index=[1])
-    rtn_df['runs'] = np.empty((len(rtn_df), 0)).tolist()
-    rtn_df['lens'] = np.empty((len(rtn_df), 0)).tolist()
-    for ind in rtn_df.index.get_values():
-        temp = out.loc[ind, :].values
-        [rtn_df.loc[ind, 'runs'].append(elm) for elm in map(
-            get_head_tail, temp)]
-        rtn_df.loc[ind, 'lens'] = map(get_lens, temp)
     df.drop('block', axis=1, inplace=True)
-    return rtn_df
+    if col == 'sum':
+        df.drop('sum', axis=1, inplace=True)
+        target = 0.0
+    if target not in out.index.levels[0]:
+        return [], []
+    temp = out.loc[target, :].values
+    return map(get_head_tail, temp), map(get_lens, temp)
 
 
-def calc_rate_dur(file_df, cols):
+def calc_rate_dur(file_df, cols, rtn_runs=True, rtn_lens=False):
     """Returns the head and tails of runs and their duration
 
     Args:
@@ -89,8 +92,19 @@ def calc_rate_dur(file_df, cols):
     Returns:
         pd.DataFrame : indexed by cols, with columns runs and lens
     """
+    runs = []
+    lens = []
 
-    return
+    def appender(tup): runs.append(tup[0]), lens.append(tup[1])
+    ind = np.hstack((file_df.columns.values, np.array(['Nothing'])))
+    rtn_df = pd.DataFrame(index=ind)
+    [appender(tup) for tup in
+        [find_runs(file_df, col) for col in ind]]
+    if rtn_runs:
+        rtn_df['runs'] = runs
+    if rtn_lens:
+        rtn_df['lens'] = lens
+    return rtn_df
 
 
 def calc_cls_rep(file_df):
@@ -102,8 +116,7 @@ def calc_cls_rep(file_df):
         rtn_df : A pandas DataFrame with one column which is the sum of
                  every class in the file
     """
-    ind = file_df.columns
-    ind = np.hstack((ind, np.array(['Nothing'])))
+    ind = np.hstack((file_df.columns, np.array(['Nothing'])))
     rtn_df = pd.DataFrame(index=ind)
     rtn_df[0] = 0
     for col_ind, col in enumerate(file_df.columns):
