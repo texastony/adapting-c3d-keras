@@ -357,12 +357,27 @@ a long time to write and to run... but I may get both done today
    should be trivial to select the frames I want in the sample, and
    then I just need to write the final network code and pray that it
    all works...
-** TODO Train Top Layers: 4 hr
-   - Going to go in straight TF as I think I can better manage GPUs
-     there
+
 ** DONE Random Picking of training and Validation: 2 hrs
    - vidoes >= 20 will be in the validation set, while videos less
      than that will be in the training set. For now.
    - class phacoemulsifier handpiece has problems: 'phacoemulsifier handpiece'
    - class capsulorhexis cystotome has problems
 ** DONE use run.p to select frames
+** TODO Train Top Layers: 4 hr
+   - Going to go in straight TF as I think I can better manage GPUs
+     there
+*** DONE make class to hold data and feed it batch wise
+  - Needs to have call to load_stuff,
+  - Needs to have call for test batches
+  - Needs to have call for trian batches
+  - Needs to have test attribute
+  - Needs to have train attribute
+  - ex: catar.test.frames[i:i + BATCH_SIZE]
+  - ex: catar.test.labels[i:i + BATCH_SIZE
+  - ex: catar.train.next_batch(
+                    BATCH_SIZE * NUM_GPUS)
+*** DONE initate class at top
+*** DONE write build_net
+
+
