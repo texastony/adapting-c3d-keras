@@ -1,0 +1,1 @@
+exec python2 src/preprocessing.py $1
