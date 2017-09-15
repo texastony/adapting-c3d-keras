@@ -1,10 +1,7 @@
 from __future__ import print_function
 import os
-import time
-import cPickle as pickle
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 from progbar import Progbar
 
 NUM_INPUT = 8192
@@ -24,17 +21,15 @@ class Catar(object):
                  path_extracted=os.path.join(OUTDIR, 'extracted'),
                  cls_lst=CLS_LST):
         print("Loading Train_Frames")
-        self.train_frames = load_stuff(['frame'],
-                                       path_run=os.path.join(
-                                           path_run, 'learn/run.p'))
-        self.train_labels = load_stuff(['label'],
-                                       path_run=os.path.join(
-                                           path_run, 'learn/run.p'))
+        self.train_frames = load_stuff(
+            ['frame'], path_run=os.path.join(path_run, 'learn/run.h5'))
+        self.train_labels = load_stuff(
+            ['label'], path_run=os.path.join(path_run, 'learn/run.h5'))
         print("Loading Test_Frames")
-        self.test_frames = load_stuff(['frame'],
-                                      path_run=os.path.join(path_run, 'vldt/run.p'))
-        self.test_labels = load_stuff(['label'],
-                                      path_run=os.path.join(path_run, 'vldt/run.p'))
+        self.test_frames = load_stuff(
+            ['frame'], path_run=os.path.join(path_run, 'vldt/run.h5'))
+        self.test_labels = load_stuff(
+            ['label'], path_run=os.path.join(path_run, 'vldt/run.h5'))
         self.test_ind = 0
         self.train_ind = 0
 
@@ -48,38 +43,35 @@ class Catar(object):
             return rtn_ind, arr[np.ix_(rtns)]
 
     def train_next_batch(self, request_size):
-        _, frame_arr = self._next_batch(request_size, self.train_frames,
-                                        self.train_ind)
-        self.train_ind, label_arr = self._next_batch(request_size,
-                                                     self.train_labels,
-                                                     self.train_ind)
+        _, frame_arr = self._next_batch(
+            request_size, self.train_frames, self.train_ind)
+        self.train_ind, label_arr = self._next_batch(
+            request_size, self.train_labels, self.train_ind)
         return frame_arr, label_arr
 
     def test_next_batch(self, request_size):
-        _, frame_arr = self._next_batch(request_size, self.test_frames,
-                                        self.test_ind)
-        self.test_ind, label_arr = self._next_batch(request_size,
-                                                    self.test_labels,
-                                                    self.test_ind)
+        _, frame_arr = self._next_batch(
+            request_size, self.test_frames, self.test_ind)
+        self.test_ind, label_arr = self._next_batch(
+            request_size, self.test_labels, self.test_ind)
         return frame_arr, label_arr
 
+# import catar; import os; os.chdir('..'); catar_here = catar.Catar();
 
-def load_stuff(cmd=['label'],
-               path_run='out/learn/run.p', path_labels='data/train-labels',
+
+def load_stuff(cmd=['frame'],
+               path_run='out/learn/run.h5', path_labels='data/train-labels',
                path_extracted=os.path.join(OUTDIR, 'extracted'),
                cls_lst=CLS_LST):
-    runs = pickle.load(open(path_run, 'rb'))
-    srcs = np.array([elm[0] for elm in runs])
-    height = np.sum([elm[1][1] - elm[1][0] for elm in runs])
+    runs = pd.read_hdf(path_run)
+    srcs = runs.index.values
+    height = sum(runs.lens.sum())
     width = NUM_INPUT if 'frame' in cmd else len(cls_lst)
     out_arr = np.empty((height, width))
     out_ind = 0
-    uni_srcs = np.unique(srcs)
     status = Progbar(height)
-    for ind, src in enumerate(uni_srcs):
-        runs_here = [mem[1] for mem in
-                     filter(lambda elm: True if elm[0] == src else False,
-                            runs)]
+    for ind, src in enumerate(srcs):
+        runs_here = runs.loc[src, 'runs']
         if 'label' in cmd:
             file_df = pd.read_csv(os.path.join(
                 path_labels, src + '.csv'), index_col=0)
@@ -87,16 +79,17 @@ def load_stuff(cmd=['label'],
             src_arr = np.load(os.path.join(path_extracted, src + '.npy'))
         for run in runs_here:
             next_ind = out_ind + (run[1] - run[0])
-            temp = out_arr[out_ind:next_ind + 1, :].shape
-            if temp[0] == 0:
-                return out_arr
             status.update(
-                next_ind, text="{}  ".format(temp))
-            if 'label' in cmd:
-                out_arr[out_ind:next_ind + 1, :] = file_df.loc[
-                    run[0]: run[1], cls_lst].values
-            if 'frame' in cmd:
-                out_arr[out_ind:next_ind + 1, :] = src_arr[run[0]:run[1]]
+                next_ind, text="{}  ".format(src), force=True)
+            try:
+                if 'label' in cmd:
+                    out_arr[out_ind:next_ind, :] = file_df.loc[
+                        run[0]: run[1] - 1, cls_lst].values
+                if 'frame' in cmd:
+                    out_arr[out_ind:next_ind, :] = src_arr[run[0]:run[1]]
+            except ValueError:
+                print("ValueError")
+                return out_arr
             out_ind += next_ind
     return out_arr
 
@@ -106,5 +99,5 @@ def eprint(*args, **kwargs):
     print(*args, file=stderr, **kwargs)
 
 
-os.chdir('..')
-load_stuff()
+# os.chdir('..')
+# load_stuff()

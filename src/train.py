@@ -2,8 +2,6 @@ from __future__ import print_function
 import os
 import time
 import catar
-from sys import exitfunc
-import cPickle as pickle
 import numpy as np
 import pandas as pd
 import tensorflow as tf

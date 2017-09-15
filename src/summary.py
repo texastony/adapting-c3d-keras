@@ -46,10 +46,10 @@ def main(filenames, path, command='class_rep', classes=[],
                 file_df, file_df.columns.values,
                 rtn_lens=rtn_lens, rtn_runs=rtn_runs)
         del file_df
-    if command == 'class_rep':
-        plt_class_rep(label_df, save_file=get_path(
-            outname + '_' + command + '.png'))
-    label_df.to_hdf(get_path(OUTFILE), 'w')
+    # if command == 'class_rep':
+    #     plt_class_rep(label_df, save_file=get_path(
+    #         outname + '_' + command + '.png'))
+    # label_df.to_hdf(get_path(OUTFILE), 'w')
     return label_df
 
 
@@ -69,10 +69,6 @@ def find_runs(df, col, target=1.0):
     if col == 'Nothing':
         df['sum'] = df.sum(axis=1)
         col = 'sum'
-
-    def get_head_tail(arr): return (arr[0], arr[-1])
-
-    def get_lens(arr): return len(arr)
     # from: https://stackoverflow.com/a/14360423/2090045
     df['block'] = (df[col].shift(1) != df[col]).astype(int).cumsum()
     out = df.reset_index().groupby([col, 'block'])[
@@ -87,6 +83,12 @@ def find_runs(df, col, target=1.0):
     return map(get_head_tail, temp), map(get_lens, temp)
 
 
+def get_head_tail(arr): return (arr[0], arr[-1])
+
+
+def get_lens(arr): return len(arr)
+
+
 def calc_runs(file_df, cols, rtn_runs=True, rtn_lens=False):
     """Returns the head and tails of runs and their duration
 
@@ -99,11 +101,9 @@ def calc_runs(file_df, cols, rtn_runs=True, rtn_lens=False):
     """
     runs = []
     lens = []
-
-    def appender(tup): runs.append(tup[0]), lens.append(tup[1])
     ind = np.hstack((file_df.columns.values, np.array(['Nothing'])))
     rtn_df = pd.DataFrame(index=ind)
-    [appender(tup) for tup in
+    [(runs.append(tup[0]), lens.append(tup[1]),) for tup in
         [find_runs(file_df, col) for col in ind]]
     if rtn_runs:
         rtn_df['runs'] = runs
@@ -231,3 +231,7 @@ if __name__ == "__main__":
              args.outname, rtn_lens=True, rtn_runs=False)
     main(filenames, args.directory,
          args.command[0], args.classes, args.outname)
+
+# def appender(tup, runs, lens):
+#     runs.append(tup[0])
+#     lens.append(tup[1])
