@@ -379,9 +379,29 @@ a long time to write and to run... but I may get both done today
                     BATCH_SIZE * NUM_GPUS)
 *** DONE initate class at top
 *** DONE write build_net
-*** IN-PROGRESS vectorize load_stuff
-*** TODO change layer weigth init to be truncated normal
-*** TODO change softmax to be something else
-*** TODO change out to be sigmoid 
+*** DONE change out to be sigmoid 
 *** DONE FIX DATA_FEED SO THAT IT DOES NOT SAMPLE WITH REPALCEMENT
-    
+*** DONE vectorize load_stuff
+*** DONE change layer weigth init to be truncated normal
+*** DONE change softmax to be something else
+  - LOAD out/model/full_for_4.h5
+  - Can change to 20 via model.layers[-1].units = 20
+  - model.compile(loss='binary_crossentropy', optimizer=op) 
+  - model.compile(loss=
+  - op = keras.optimizers.Nadam(lr=0.003)
+
+** DONE WHY are Extracted 8k when the they should be 4k?   
+  - Because I cut the network sooner than I thought
+  - At the time, I thought that this was a good idea.
+-- Mini-Batch should be 30
+-- I checked, 16 is right for clip size
+-- final net should use binary_cross entropy
+model.fit(np.ones((1, 16, 112, 112, 3)), np.array([[0, 1, 0, 1]]))
+
+
+What is my Pipeline?
+ preprocess.py    <-- preprocessing.py
+ extract.py       <-- main.py
+ eda.py           <-- summary.py
+ sample.py        <-- data_feed.py
+ fit_predict.py   <-- train.py

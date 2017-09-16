@@ -10,12 +10,13 @@ from keras import backend as K
 from progbar import Progbar
 
 
-os.chdir('/home/ubuntu/capstone')
+# os.chdir('/home/ubuntu/capstone')
 OUTDIR = os.path.relpath('out')
 DATADIR = os.path.relpath('data/preprocessed')
 MODEL_DIR = os.path.relpath('model')
 UPDT_FRQ = 50
 # main(['test00.npy'])
+
 
 def main(filenames, device='/gpu:2'):
     print("[Info] Loading Model")
@@ -29,8 +30,9 @@ def main(filenames, device='/gpu:2'):
     to_net = np.empty((16, 112, 112, 3))
     for filename in filenames:
         print("[Info] Loading videos")
-        vid = np.load(os.path.join(OUTDIR, 'preprocessed', filename)).astype(np.float32)
-        temp = np.zeros((16,)+vid.shape[1:])
+        vid = np.load(os.path.join(OUTDIR, 'preprocessed',
+                                   filename)).astype(np.float32)
+        temp = np.zeros((16,) + vid.shape[1:])
         end_frame = vid.shape[0]
         output = np.empty((vid.shape[0], 8192))
         status = Progbar(target=end_frame, text=filename.rsplit('.', 1)[0])
@@ -52,6 +54,7 @@ def main(filenames, device='/gpu:2'):
                 status.update(frm_ind)
         np.save(os.path.join(OUTDIR, 'extracted', filename), output)
 
+
 def prnt_mdl_outs(model, batch_size=1):
     last_output = (batch_size, 16, 112, 112, 3)
     for ind, layer in enumerate(model.layers):
@@ -68,12 +71,11 @@ def prnt_mdl_outs(model, batch_size=1):
 
 def modify_model(model, output_units=18,
                  optimizer=SGD(lr=0.003, decay=3.33e-6),
-                 loss=mean_squared_error):
+                 loss=):
     """
     Function for modifying C3D into C3D feature extractor and setting up the
     network for fine tuning. Optimizer is as given in the paper. Loss is best
     guess at what they used.
-
     # Arguments
         model: a keras model, assumed to be C3D
         output_units: the size of the output vector
@@ -83,15 +85,15 @@ def modify_model(model, output_units=18,
         None
     """
     #  Lock trained conv layers
-    for layer in model.layers[:14]:
+    for layer in model.layers:
         layer.trainable = False
     #  Change output vector for new use
-    model.layers[-1].units = output_units
+    # model.layers[-1].units = output_units
     #  Reset top Layers
     # reinitialize_layer_weigt(model.layers[14:])
-    model.layers = model.layers[:15]
-    model.compile(optimizer=optimizer,
-                  loss=loss)
+    # model.layers = model.layers[:15]
+    # model.compile(optimizer=optimizer,
+        # loss=loss)
     return model
 
 
