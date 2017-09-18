@@ -19,7 +19,7 @@ def main(filenames, path, command='class_rep', classes=[],
     OUTFILE = command + '.h5'
     if outname is not None:
         if rtn_lens:
-            OUTFILE = 'lens.hf'
+            OUTFILE = 'lens.h5'
         OUTFILE = outname + '_' + OUTFILE
 
     def chk_csv(string): return True if '.csv' in string else False
@@ -49,7 +49,7 @@ def main(filenames, path, command='class_rep', classes=[],
     # if command == 'class_rep':
     #     plt_class_rep(label_df, save_file=get_path(
     #         outname + '_' + command + '.png'))
-    # label_df.to_hdf(get_path(OUTFILE), 'w')
+    label_df.to_hdf(get_path(OUTFILE), 'w')
     return label_df
 
 
@@ -170,7 +170,7 @@ def plt_class_rep(label_df, save_file='class_rep.png'):
     label_df.plot.barh(stacked=True, log=False, ax=ax, cmap=mymap)
     ax.set_title('Class Representation in samples')
     plt.savefig(save_file)
-    plt.close('all')
+    # plt.close('all')
 
 
 def print_uniques(label_df):

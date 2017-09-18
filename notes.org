@@ -348,7 +348,7 @@ a long time to write and to run... but I may get both done today
 ['Nothing', 'micromanipulator', 'phacoemulsifier handpiece', 'irrigation/aspiration handpiece','capsulorhexis cystotome']
 
 
-* 12/10/2017, Wednesday
+* 12/10/2017, Wednesday - Friday
    :PROPERTIES:
    :VISIBILITY: children
    :END:      
@@ -399,9 +399,30 @@ a long time to write and to run... but I may get both done today
 model.fit(np.ones((1, 16, 112, 112, 3)), np.array([[0, 1, 0, 1]]))
 
 
+ 
+
+* 17/10/2017, Sunday
+** ABORTED Just sample from train01 and train02, one class
+** DONE Try keras
+** 
+
+* Pipeline
 What is my Pipeline?
  preprocess.py    <-- preprocessing.py
  extract.py       <-- main.py
  eda.py           <-- summary.py
  sample.py        <-- data_feed.py
  fit_predict.py   <-- train.py
+
+* 4 classes
+['Nothing', 'micromanipulator', 'phacoemulsifier handpiece', 'irrigation/aspiration handpiece','capsulorhexis cystotome']
+
+* Multi_Gpu warnings
+multi_gpu.py:46: UserWarning: The `merge` function is deprecated and will be removed afte
+r 08/2017. Use instead layers from `keras.layers.merge`, e.g. `add`, `concatenate`, etc.
+/usr/local/lib/python2.7/dist-packages/keras/legacy/layers.py:458: UserWarning: The `Merg
+e` layer is deprecated and will be removed after 08/2017. Use instead layers from `keras.
+layers.merge`, e.g. `add`, `concatenate`, etc.                                          
+  name=name)
+multi_gpu.py:48: UserWarning: Update your `Model` call to the Keras 2 API: `Model(outputs
+=[<tf.Tenso..., inputs=[<tf.Tenso...)`  

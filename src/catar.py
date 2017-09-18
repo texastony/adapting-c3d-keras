@@ -3,12 +3,43 @@ import os
 import numpy as np
 import pandas as pd
 from progbar import Progbar
+from collections import OrderedDict
+pthjn = os.path.join
 
-NUM_INPUT = 8192
-OUTDIR = os.path.relpath('out')
-LABEL_DIR = os.path.relpath('data/train-labels')
-CLS_LST = ['micromanipulator', 'phacoemulsifier handpiece',
-           'irrigation/aspiration handpiece', 'capsulorhexis cystotome']
+
+def prog_update(status, cur, text=None):
+    status.update(cur, text)
+
+
+def fill_arr(ind, rtn_arr, arr, lens, end):
+    rtn_arr[sum(lens[:ind]):sum(lens[:ind]) +
+            end] = arr.astype(np.float32)
+
+
+def get_data(label_dict, path):
+    lens = [arr.values.shape[0] for arr in label_dict.values()]
+    rtn_arr = np.empty((sum(lens), 128, 171, 3), dtype=np.float32)
+    status = Progbar(len(lens))
+    [(fill_arr(
+        ind, rtn_arr, np.load(
+            pthjn(path, arr.rsplit('.', 1)[0] + '.npy')),
+        lens, lens[ind]),
+      status.update(ind, text=arr.rsplit('.', 1)[0]),)
+     for ind, arr in enumerate(label_dict.keys())]
+    return rtn_arr
+
+
+def load_dfs(path):
+    return OrderedDict([(name, pd.read_csv(pthjn(path, name), index_col=0))
+                        for name in sorted(os.listdir(path))])
+
+
+def join_dfs(label_dict, n_classes):
+    lens = [arr.values.shape[0] for arr in label_dict.values()]
+    rtn_arr = np.empty((sum(lens), n_classes), dtype=np.float32)
+    [fill_arr(ind, rtn_arr, df.values, lens, lens[ind])
+     for ind, df in enumerate(label_dict.values())]
+    return pd.DataFrame(columns=label_dict.values()[0].columns, data=rtn_arr)
 
 
 class Catar(object):
@@ -17,21 +48,12 @@ class Catar(object):
     mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
     """
 
-    def __init__(self, path_run=OUTDIR,
-                 path_extracted=os.path.join(OUTDIR, 'extracted'),
-                 cls_lst=CLS_LST):
-        print("Loading Train_Frames")
-        self.train_frames = load_stuff(
-            ['frame'], path_run=os.path.join(path_run, 'learn/run.h5'))
-        self.train_labels = load_stuff(
-            ['label'], path_run=os.path.join(path_run, 'learn/run.h5'))
-        print("Loading Test_Frames")
-        self.test_frames = load_stuff(
-            ['frame'], path_run=os.path.join(path_run, 'vldt/run.h5'))
-        self.test_labels = load_stuff(
-            ['label'], path_run=os.path.join(path_run, 'vldt/run.h5'))
-        self.test_ind = 0
-        self.train_ind = 0
+    def __init__(self, label_arr, frame_arr, num_gpus=1):
+        self.num_gpus = num_gpus
+        self.label_arr = label_arr
+        self.frame_arr = frame_arr
+        self.batch_szie = frame_arr.shape[0] / num_gpus
+        self.index = 0
 
     def _next_batch(self, request_size, arr, ind):
         end = len(arr)
@@ -42,62 +64,21 @@ class Catar(object):
             rtns = np.arange(ind - end, rtn_ind, 1)
             return rtn_ind, arr[np.ix_(rtns)]
 
-    def train_next_batch(self, request_size):
+    def next_batch(self, request_size):
         _, frame_arr = self._next_batch(
-            request_size, self.train_frames, self.train_ind)
-        self.train_ind, label_arr = self._next_batch(
-            request_size, self.train_labels, self.train_ind)
+            request_size, self.frame_arr, self.index)
+        self.index, label_arr = self._next_batch(
+            request_size, self.label_arr, self.index)
         return frame_arr, label_arr
 
-    def test_next_batch(self, request_size):
-        _, frame_arr = self._next_batch(
-            request_size, self.test_frames, self.test_ind)
-        self.test_ind, label_arr = self._next_batch(
-            request_size, self.test_labels, self.test_ind)
-        return frame_arr, label_arr
+    def generate(self):
+        while True:
+            frame_arr, label_arr = self.next_batch(self.batch_size)
+            yield frame_arr, label_arr
 
-# import catar; import os; os.chdir('..'); catar_here = catar.Catar();
-
-
-def load_stuff(cmd=['frame'],
-               path_run='out/learn/run.h5', path_labels='data/train-labels',
-               path_extracted=os.path.join(OUTDIR, 'extracted'),
-               cls_lst=CLS_LST):
-    runs = pd.read_hdf(path_run)
-    srcs = runs.index.values
-    height = sum(runs.lens.sum())
-    width = NUM_INPUT if 'frame' in cmd else len(cls_lst)
-    out_arr = np.empty((height, width))
-    out_ind = 0
-    status = Progbar(height)
-    for ind, src in enumerate(srcs):
-        runs_here = runs.loc[src, 'runs']
-        if 'label' in cmd:
-            file_df = pd.read_csv(os.path.join(
-                path_labels, src + '.csv'), index_col=0)
-        if 'frame' in cmd:
-            src_arr = np.load(os.path.join(path_extracted, src + '.npy'))
-        for run in runs_here:
-            next_ind = out_ind + (run[1] - run[0])
-            status.update(
-                next_ind, text="{}  ".format(src), force=True)
-            try:
-                if 'label' in cmd:
-                    out_arr[out_ind:next_ind, :] = file_df.loc[
-                        run[0]: run[1] - 1, cls_lst].values
-                if 'frame' in cmd:
-                    out_arr[out_ind:next_ind, :] = src_arr[run[0]:run[1]]
-            except ValueError:
-                print("ValueError")
-                return out_arr
-            out_ind += next_ind
-    return out_arr
-
-
-def eprint(*args, **kwargs):
-    from sys import stderr
-    print(*args, file=stderr, **kwargs)
-
-
-# os.chdir('..')
-# load_stuff()
+    # def test_next_batch(self, request_size):
+    #     _, frame_arr = self._next_batch(
+    #         request_size, self.test_frames, self.test_ind)
+    #     self.test_ind, label_arr = self._next_batch(
+    #         request_size, self.test_labels, self.test_ind)
+    #     return frame_arr, label_arr
