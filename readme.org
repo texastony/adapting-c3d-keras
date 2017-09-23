@@ -1,328 +1,50 @@
 #+STARTUP: overview
 # -*- mode: org -*-
 
-* 31/08/2017, THURSDAY
-  :PROPERTIES:
-  :VISIBILITY: children
-  :END:      
-** DONE Create Summary of labels. 
-   1. Write Script locally and test. 
-      - For train01, not all the tools are used.
-        
-** DONE Load PIL or other image library
-   1. For now, I am going to use Keras
-   2. Pick one of the Keras Models under applications:
-      - The fastest is probably the best choice
-   3. Determine its input image size
-   4. Reduce train01.mp4 to frames of that size
-   5. Evalulate the model
+*This project is still a work in progress. Please follow this repo for updates*
 
-** DONE Pick a model that is already fine tuned for videos
-   Mostly finding models via ActivityNet 2017 tasks 3&4 submissions
+** What is this project?
+  C3D was released in 2015, and it is not difficult to recreate the
+  network in Tensorflow or Keras. I was able to use C3D for a activity
+  recognition project with moderate success. During that process, I
+  encountered many challenges, several of which I am still
+  addressing. I wish to share my solutions to these challenges.
 
-   1. DenseNet
-      - Not for videos... but killer for still images
-      - TF Imps:
-        - YixunaLi: NO weights, No finetuning
-        - LaurentMazare: NO weights, NO finetuning
-        - other one: No Weights...
-   2. CDC: Convolutional-De-Convolutional Networks for Precise Temporal \
-      Action Localization in Untrimmed Videos
-      - Cited by winners of 2017, 
-      - presented at CVPR 2017
-      - Can only be used with Caffe, and even then:
-        - Only with C3D, Facebooks improvement on Caffe for 3D convs
-        - This will not build on my mac, as I do not have a gpu
-        - It should work on aws
-   3. Single SHot Temporal Action Detection
-      - Tianwei Lin, Xu Zhao, Zheng Shou
-   4. Temporal Convolution Based Action Proposal
-      - Tianwei Lin, Xu Zhao, Zheng Shou
-   5. arxiv prepint:1608.00797
-   6. Segment-CNN
-      - Another entry to CVPR 2016
-      - Looks like it could be built for CPU based on config
-      - Will attempt Build
-      - Completed build, attempting Demo
-      - Demo does not work right now, running make runtest to see if it was built right
-      - =install_name_tool -change @rpath/libhdf5.10.dylib ~/anaconda2/lib/libhdf5.10.dylib .build_release/tools/caffe=
-      - =install_name_tool -change @rpath/libhdf5_hl.10.dylib ~/anaconda2/lib/libhdf5_hl.10.dylib .build_release/tools/caffe=
-      - And there was a huge crash with explosion, even with rebuilding and linking of CV
-        - openMPI, Numpy, OpenBlas...
-        - There involves opencv, so I will keep on eye on any other open cv errors
-   7. https://github.com/pengxj/action-faster-rcnn
-   8. https://bitbucket.org/sahasuman/bmvc2016_code
-   9. https://github.com/gkioxari/ActionTubes
-   10. https://github.com/jvgemert/apt
-   11. https://bitbucket.org/doneata/proposals
-       - Python and Matlab
-   12. http://www.cs.ucf.edu/~ytian/sdpm.html#Code
-       -Matlab
-   13. https://github.com/escorciav/daps
-       - Python, Theano, Pretrianed models
-   14. https://github.com/cabaf/sparseprop
-       - C3D and python
-   15. https://github.com/wanglimin/actionness-estimation/
-       - opencv, c++, denseflow, matlab
-   16. https://github.com/syyeung/frameglimpses
-       - Torch, end to end
-   17. https://github.com/gulvarol/ltc
-       - Torch, no weights
-   18. https://github.com/yjxiong/temporal-segment-networks
-       - Won ActivityNet 2016
-       - Caffe
-   19. https://github.com/atcold/pytorch-CortexNet
-       - Some weights
-       - pyTorch
-   20. https://github.com/amandajshao/Slicing-CNN
-       - Caffe
-   21. https://github.com/yhenon/keras-frcnn
-       - Keras
-       - Bounding Boxes
-   22. https://pjreddie.com/darknet/yolo/
-       - Needs bounding boxes...
-   23. All of this lead to me to c3d-keras, which seems to work
-       
-** ABORTED In case ^ fails, I should begin looking for a simple seg-net in keras
+** C3D
+  C3D is a deep neural network developed by CS deparment at Dartmouth
+  and Facebook's AI lab. [[http://vlg.cs.dartmouth.edu/c3d/][Its main website is here]], [[https://github.com/facebook/C3D][the repo for is here]],
+  [[https://arxiv.org/abs/1412.0767][and the paper is available here]]. It was developed and released in Caffe, 
+  but [[https://github.com/axon-research/c3d-keras][others have recreated it in Tensorflow and Keras]]. Caffe looks
+  brilliant, but I am not about to try and learn every ML/NN/Analytic
+  library/framework out there. (Frankly that would be an awesome Job).
+
+  C3D is a very popular model for video classification and activity
+  recognition.  It has appeared in many papers responding to the
+  ActivityNet Challenge for Action proposal regions, held by
+  CVPR. There are certantily other models for video classifcation.
+  If you are looking for a list of papers with open source code,
+  may I direct you to:  [[https://github.com/jinwchoi/awesome-action-recognition][This Repo of Papers]], which I have 
+  found very useful. 
+
+** What I used C3D for:
+  I had 9 hours of 1080 by 1920 video in which I needed to detect the activity 
+  of 21 different tools. At first, I used C3D as a feature extracture. I took 
+  the output of layer 13, the last pooling layer, and fit my own relu dense 
+  net to it with categorical cross entropy and dropout. My results were
+  terrible, but I think that I will see better results with this method if 
+  I better pre-process the videos or re-scale C3D to match the ratio of my 
+  videos. More on this later.
 
 
-* 01/09/2017, FRIDAY
-  :PROPERTIES:
-  :VISIBILITY: children
-  :END:      
-** Review:
-   - Yesterday, I did look at many interesting models, but none of them will
-     work out of the box. Most would take quite a few hours simply to set up
-     a develop envoirment, so I am putting them off till later
-   - Off the top of my head, I feel that my options are to use slim or Keras
+  I then attempted to fine tune the entire network. This network, if my 
+  understanding is correct, has 80 million trainable parameters. Fine tuning
+  the whole network is somewhat of memory and multi-processing challenge as 
+  compared to a straight forward modeling challenge. However, I had decent 
+  results, with an accuracy of %71 on my top 4 classes. And that was only 
+  with a few epochs of training. Granted, an epoch took 4 hours. But I think
+  that this is the better route for the problem I was working on. 
 
-** DONE List Slim pros and Cons
-   - PRO: I know it inside and out
-   - PRO: video prediction model might work
-       - https://github.com/tensorflow/models/tree/master/video_prediction
-   - PRO: It is definately properly installed on my local
+** What of this porject is currently useful?
+  None, but I will release my pipeline by September 24th, 2017. I need to clean
+  up my code and add documentation.
 
-** DONE List Keras pros and Cons
-   - CON: No video recognition models under Applications
-   - PRO: Possibly C3D under model Zoo
-     - https://github.com/albertomontesg/keras-model-zoo/blob/master/kerasmodelzoo/models/c3d.py
-
-** DONE pick slim or Keras
-   - FAILED: goign with Keras and c3d in model zoo
-   - Going to try harvitronix
-   - Thgough harvitronix, found c3d-keras by axon-research
-     - whihc is actually just one person...
-     - Looks very promising.
-     - Switching to AWS to speed things along...
-   - WAITING FOR AWS TO LET ME HAVE A BLOODY INSTANCE
-
-** WAITING Train and Eval a First S***y Model
-   - In leiu of AWS, I will try and get c3d-keras running locally
-     - DONE Download weights 
-     - DONE Download labels
-     - DONE Download raw caffe model
-     - DONE run protoc --python_out=. caffe.proto
-     - DONE configure keras
-     - DONE run convert_caffe_model
-       - NOTE convert_caffe_model is not parralized and could be
-     - DONE download test vids
-     - WIP run test_model.py
-       - cv2 is throwing errors, which is upsetting 
-       - opencv is still not linked to homebrew...
-       - but =pip install opencv-python= did the trick
-   - Ok, so it works on the demo, but now I need to run with my stuff
-   - Accomplished! We have output from a c3d model with a tf backend
-     - the output is for the 
-
-** PARKING TF throws warnings when running convert_caffe_model
-   - If I am going to use c3d-keras, I should fix that.
-   - I recorded the warnings in out.text
-       
-
-
-* 02/09/2017, Labor Day weekend
-  :PROPERTIES:
-  :VISIBILITY: children
-  :END:      
-** Review:
-   Last night, I eneded with an output from the network that was a 500
-   long confidence vector, which is what I expected. The original
-   model was trained on a dataset with 500 labels. Also, the network
-   would like images to be 112 by 112, while the preprosccesing would
-   like the network to be 128 by 178. Now, the first goal should be to
-   adapt the top layer for my labels, which is an 18 long vector. That
-   would let me eval the network. Then I can look at clever
-   downsampling methods with convolutional layers with large strides,
-   pooling, etc. Those will probably be trained by autoencoders, which
-   I will have to review. I will also need to review papers on
-   downsampling. 
-** DONE Push to github
-   - Branch name changed to pre-alpha
-   - github repo intialized
-   - issue with file size of weight matrix
-     - This is why chuckcho downloaded the wieghts from another site
-     - Which is what I will do.
-** DONE Replace top-layer(s) with fcs for target vector 
-** ABORTED Train new top-layer(s) with autoencoding
-   - After reading: [[https://blog.keras.io/building-autoencoders-in-keras.html][Keras Blog on Autoencoders]]
-   - It is clear to me that autoencoders are out of fasion...
-   - [[https://medium.com/towards-data-science/transfer-learning-using-keras-d804b2e04ef8][Medium Example]] on Freezing weights and fine-tuning a network
-   - I will just follow that instead
-   - Also, reading the [[https://arxiv.org/abs/1412.0767][C3D paper]], which I should have read a long time ago
-     * They recommend cutting at fc6.
-
-
-* 05/09/2017, Tuesday
-  :PROPERTIES:
-  :VISIBILITY: children
-  :END:      
-** DONE script AWS for training top-layer(s)
-** IN-PROGRESS Create data streamer
-   - Can use from keras.preprocessing.image.ImageDataGenerator
-   - Will need to modify to ensure that every batch has 8 frame overlay
-   - Can probably extend to use cv2 resize (MUST USE)
-   - Cannot use ImageDataGenerator, but can create my own generator no problem
-     - Right, cv2, a little bit of a pain in the...
-   - We, apperently, are working Height by Width... who knew?
-     
-** PARKING Adapt cv2 code for gpu
-   - Does python-cv support the openCV gpu module? NO
-   - Solution:
-     - [[https://stackoverflow.com/questions/42125084/accessing-opencv-cuda-functions-from-python-no-pycuda][ostrumvulpes of StackOverflow.]]
-   - Great, more building is in my future
-   - Also, will not build without nvidia drivers, so will have to build on AWS
-   - On the otherhand, God Bless ostrumvulpes of StackOverflow. 
-     - What a champion
-       
-** PARKING Train bottom layers
-    - Following  [[http://dblp.org/rec/journals/corr/GerasWKMC17][K Geras, K Cho, et al.]]
-    - Can still do my large stride for image reduction trick
-    - Can intialize the weights with lower levels of C3D...
-    - Image is reduced by the layers stride.
-    - So, with an image that is 1920 by 1080, to get to 112 by 112
-      - 1920/112 is 17, 1080/112 is 9
-      - There is a debate to be had about processing the image in a square shape...
-      - No need to convolv in time when compressing, will let c3d handle that.
-    - Will get to this if first results are poor     
-    - Scratch code for it stashed in src/down_conv.py
-
-
-
-* 06/09/2017, Wednesday
-  :PROPERTIES:
-  :VISIBILITY: children
-  :END:      
-** TODO Proper ReadME
-** TODO Proper Write Up
-** PARKING Notebook example
-** PARKING Requirements
-** TODO script AWS for training top-layer(s)
-   - Zsh will tell python which numbers numbers to process
-   - Zsh will launch python at the top directory
-   - Start with one thread
-   - Then try cv2 with gpu
-   - If that fails, try multiprocessing
-
-
-* 07/09/2017, Thursday
-  :PROPERTIES:
-  :VISIBILITY: children
-  :END:      
-** Review:
-   - Never, ever, use Amazon linux. It is stupid and cost me a ton of time
-   - That being said, I know a ton more regex now, as well zsh and top
-   - I have all the movies being converted now, or they have already been converted
-   - I should write something to check the npy array's integrity, subtract the mean, and carry on
-   - And I need to npy the cvs files
-   - Put the model on AWS
-** DONE npy the cvs files
-** DONE chk and subtract mean on train vids
-** DONE write cmd line for getting aws address give instance-id
-** DONE write cmd line for getting instance id given name
-   - would start with =aws ec2 describe-instance=
-** IN-PROGRESS Create Data Streamer
-   - 8 Frame overlap is crucial
-   - lets start with 1 minute chucks as our unit
-     - Assume 24 fps, so 24 * 60 = 1440
-   - Arguments:
-     - Label dir
-     - npy dir
-     - continous region size
-     - random seed
-   - Can use sklearn.model_selection.StratifiedKFold
-     - But, not really, because I have to keep data together 
-   - Simple, really, load all labels into a dataframe
-   - For each video, divide into chunks as close to region_size as possible
-   - store all the data, we have 61 GiB of memory.
-** PARKING Data Streamer could have its own thread
-** TODO data_feed documentation
-
-
-* 08/09/2017, Friday
-  :PROPERTIES:
-  :VISIBILITY: children
-  :END:      
-** DONE Slides for presentation
-** IN-PROGRESS Create Data Streamer
-   - 8 Frame overlap is crucial
-   - lets start with 1 minute chucks as our unit
-     - Assume 24 fps, so 24 * 60 = 1440
-   - Arguments:
-     - Label dir
-     - npy dir
-     - continous region size
-     - random seed
-   - Can use sklearn.model_selection.StratifiedKFold
-     - But, not really, because I have to keep data together 
-   - Simple, really, load all labels into a dataframe
-     - write a for loop that loads all the npy arras from a dir and stacks them
-   - For each video, divide into chunks as close to region_size as possible
-   - store all the data, we have 61 GiB of memory.
-
-** PARKING Use h5py and multiprocessing to really pick up the pace on data_feed
-
-
-* 09/09/2017, Weekend
-  :PROPERTIES:
-  :VISIBILITY: children
-  :END:
-** Review:
-   Jeff needs me to make something that works. My presentation was not terrible,
-but... yeah, I was supposed to have a minable viable product and I do not not, and 
-do not know how long it will actually take to get one up. Historically, I do not get 
-much done on the weekends. It is already 5:40PM. I can use an AWS intance to extract 
-the features with... No I got it I know how to make this work
-** IN-PROGRESS Quick Solution
-   - Load one sample at a time, extract all the features and save the flattened feature 
-     maps.
-   - Train 2 fcs on those maps. 
-** DONE Create snapshot, and load it to bigger instance 
-   - Snapshots apperently take a long time, which is upsetting.
-
-** DONE Quick dirty code for extracting features
-** PARKING Optimize feature extraction
-
-* 10/10/2017, Monday
-   :PROPERTIES:
-   :VISIBILITY: children
-   :END:      
-** Review
-   On Sunday, I kicked some ass. I figured out a dirty way to extract
-features using the c3d network, and I can now train a regular nn on 
-the extracted features. I could do much better optimization on the 
-feature extraction process, but for now it works. I should note...
- We are not seeing a reduction in size at all... I mean, just a tiny amount...
-I am going to look into that. ETC is 1:00PM. 
-** DONE Check output
-  - The output is np.float64, which was not expected... and is likely a massive
-slow down in computation... very upsetting.
-  - But, it looks valid, so... on to figuring out how to train a network
-** TODO Train Top Layers
-   - Going to go in straight TF as I think I can better manage GPUs there
-** TODO Weighting Classes
-** TODO Analyze labels more
-   - summary.py has code that will show class representation in different
-samples. 
-   - Many classes are only represented in some videos
-   - Now, I should find something that looks at rate duration.
-   - Nope,

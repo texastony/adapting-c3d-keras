@@ -1,10 +1,22 @@
+"""
+Data Generator for Keras.
+"""
 from __future__ import print_function
+from __future__ import division
 import os
+import h5py
 import numpy as np
 import pandas as pd
 from progbar import Progbar
 from collections import OrderedDict
 pthjn = os.path.join
+
+
+def get_sel(name, file_df, cls_lst):
+    sum_ser = pd.Series(data=file_df.sum(axis=1), index=file_df.index)
+    sel = file_df[cls_lst][sum_ser > 0.5]
+    # frames = get_frames(name, sel.index)
+    return sel
 
 
 def prog_update(status, cur, text=None):

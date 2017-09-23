@@ -46,9 +46,9 @@ def main(filenames, path, command='class_rep', classes=[],
                 file_df, file_df.columns.values,
                 rtn_lens=rtn_lens, rtn_runs=rtn_runs)
         del file_df
-    # if command == 'class_rep':
-    #     plt_class_rep(label_df, save_file=get_path(
-    #         outname + '_' + command + '.png'))
+    if command == 'class_rep':
+        plt_class_rep(label_df, save_file=get_path(
+            outname + '_' + command + '.png'))
     label_df.to_hdf(get_path(OUTFILE), 'w')
     return label_df
 
@@ -146,29 +146,17 @@ def _calc_per(arr):
 
 def plt_class_rep(label_df, save_file='class_rep.png'):
     """Plots class representation in each file.
-
-    If there are more than 20 files, then hatches will be added
-    to all classes over 20
     Args:
         label_df: A pandas dataframe with columns as the label files,
                 indexed by the classes
         save_file: The file to save the image to
-
-    Color stacking trick From:
-    https://stackoverflow.com/a/31052741/2090045
     """
     import matplotlib.pyplot as plt
-    from matplotlib.cm import get_cmap
-    import matplotlib.colors as mcolors
     plt.style.use('ggplot')
-
-    def _all_clrs(cmap): return cmap(np.arange(cmap.N))
-    colors = np.vstack(map(_all_clrs, [get_cmap('tab20'),
-                                       get_cmap('Set1')]))
-    mymap = mcolors.LinearSegmentedColormap.from_list('my_colormap', colors)
     fig, ax = plt.subplots(figsize=(20, 14))
-    label_df.plot.barh(stacked=True, log=False, ax=ax, cmap=mymap)
+    label_df.plot.barh(stacked=True, log=True, ax=ax)
     ax.set_title('Class Representation in samples')
+    print('Saving png to {}'.format(save_file))
     plt.savefig(save_file)
     # plt.close('all')
 
