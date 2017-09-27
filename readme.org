@@ -45,6 +45,10 @@
   that this is the better route for the problem I was working on. 
 
 ** What of this porject is currently useful?
-  None, but I will release my pipeline by September 24th, 2017. I need to clean
-  up my code and add documentation.
+  None, but I will release a stable product in the comming weeks. 
+  I am in the process of generalizing my code so that it can work on
+  novel datasets. I am also working on optimizations that take
+  advantage of gpus every step of the process instead of just in
+  Tensorflow. For that, I may have to switch to mxnet instead of
+  numpy...
 

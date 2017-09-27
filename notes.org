@@ -303,7 +303,7 @@ the features with... No I got it I know how to make this work
 ** PARKING Optimize feature extraction
 
 
-* 10/10/2017, Monday
+* 10/09/2017, Monday
    :PROPERTIES:
    :VISIBILITY: children
    :END:      
@@ -329,7 +329,7 @@ samples.
    - Nope,
 
 
-* 11/10/2017, Tuesday
+* 11/09/2017, Tuesday
    :PROPERTIES:
    :VISIBILITY: children
    :END: 
@@ -348,7 +348,7 @@ a long time to write and to run... but I may get both done today
 ['Nothing', 'micromanipulator', 'phacoemulsifier handpiece', 'irrigation/aspiration handpiece','capsulorhexis cystotome']
 
 
-* 12/10/2017, Wednesday - Friday
+* 12/09/2017, Wednesday - Friday
    :PROPERTIES:
    :VISIBILITY: children
    :END:      
@@ -401,14 +401,14 @@ model.fit(np.ones((1, 16, 112, 112, 3)), np.array([[0, 1, 0, 1]]))
 
  
 
-* 17/10/2017, Sunday
+* 17/09/2017, Sunday
 ** ABORTED Just sample from train01 and train02, one class
 ** DONE Try keras
 ** 
 
 
 
-* 18/10/2017, Monday
+* 18/09/2017, Monday
 ** DONE Try another base model, other than c3d...
 ** DONE Adapt code to work with Multi GPU
 ** DONE Select Frames with 4 classes only and labels 
@@ -418,7 +418,7 @@ model.fit(np.ones((1, 16, 112, 112, 3)), np.array([[0, 1, 0, 1]]))
 *** TODO Needs to work with genearte_fit, for some reason it does not like it
 
 
-* 19/10/2017, Tuesday
+* 19/09/2017, Tuesday
 Ok, This is the plan... I am going to use 1080/4 1920/4 samples.
 The memory will be huge, so I will select 30 seconds of frames randomly,
 weighted towards selecting the ones in my class.
